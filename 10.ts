@@ -1,0 +1,1 @@
+type StreetSuffixTester<T, S extends string> = T extends `${string}${S}` ? true : false;

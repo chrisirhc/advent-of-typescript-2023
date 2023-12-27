@@ -1,0 +1,1 @@
+type SantaListProtector<T> = Readonly<{[K in keyof T]: T[K] extends Function ? T[K] : SantaListProtector<T[K]>}>;

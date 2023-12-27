@@ -1,0 +1,1 @@
+type RemoveNaughtyChildren<T> = {[K in Exclude<keyof T, `naughty_${string}`>]: T[K]};
