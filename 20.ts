@@ -86,16 +86,20 @@ type Letters = {
     '░'
   ],
 };
+
 type ToAsciiArt<T extends string> =
+  ToAsciiArtUp<Uppercase<T>>;
+
+type ToAsciiArtUp<T extends string> =
   T extends `${infer F}\n${infer B}`
-      ? [...ToAsciiArt<Uppercase<F>>, ...ToAsciiArt<Uppercase<B>>]
+      ? [...ToAsciiArtUp<F>, ...ToAsciiArtUp<B>]
       : ToAsciiArtNoNewline<T>;
 
 type ToAsciiArtNoNewline<T extends string> =
   T extends ''
     ? ['', '', '']
     : T extends keyof Letters
-      ? Letters[T] extends string[]
+      ? Letters[T] extends [string, string, string]
         ? Letters[T]
         : never
       : T extends `${infer F}${infer B}`
@@ -105,34 +109,6 @@ type ToAsciiArtNoNewline<T extends string> =
           `${ToAsciiArtNoNewline<F>[2]}${ToAsciiArtNoNewline<B>[2]}`
         ]
         : never;
-
-type ToAsciiArtNoNewlineN<T extends string> =
-  T extends ''
-    ? ''
-    : T extends keyof Letters
-      ? Letters[T] extends string[]
-        ? T
-        : never
-      : T extends `${infer F}${infer B}`
-        ? `${ToAsciiArtNoNewlineN<F>}${ToAsciiArtNoNewlineN<B>}`
-        : never;
-type test0134 = ToAsciiArtNoNewlineN<" * : ">;
-
-type ToAsciiArtNoNewlineNA<T extends string> =
-  T extends ''
-    ? ['', '', '']
-    : T extends keyof Letters
-      ? Letters[T] extends string[]
-        ? Letters[T]
-        : never
-      : T extends `${infer F}${infer B}`
-        ? [
-          `${ToAsciiArtNoNewlineNA<F>[0]}${ToAsciiArtNoNewlineNA<B>[0]}`,
-          `${ToAsciiArtNoNewlineNA<F>[1]}${ToAsciiArtNoNewlineNA<B>[1]}`,
-          `${ToAsciiArtNoNewlineNA<F>[2]}${ToAsciiArtNoNewlineNA<B>[2]}`
-        ]
-        : never;
-type test013 = ToAsciiArtNoNewlineNA<' * : '>;
 
 type test = "*: " extends "" ? true : false
 type Test<T extends string> =
