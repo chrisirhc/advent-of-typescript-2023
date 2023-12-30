@@ -84,6 +84,7 @@ type Letters = {
     '#',
     '░'
   ],
+  // Without these it doesn't work on submission, but things work locally, perahps on a newer TypeScript version
   " : *  ": ["░#░░░░", "░░░#░░", "░#░░░░"],
   " * : ": ["░░░#░", "░#░░░", "░░░#░"],
 };
