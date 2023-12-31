@@ -1,4 +1,3 @@
-// WIP
 type TicTacToeChip = '❌' | '⭕';
 type TicTacToeEndState = '❌ Won' | '⭕ Won' | 'Draw';
 type TicTacToeState = TicTacToeChip | TicTacToeEndState;
@@ -25,12 +24,30 @@ type NewGame = {
 };
 
 type TicTacToe<T extends TicTacToeGame, P extends TicTacToePositions> = 
-  {
-    board: NewBoardState<T, P>,
-    state: T['state'] extends TicTacToeChip
-      ? WhoWon<T['state'], NewBoardState<T, P>>
-      : never
-  };
+  InvalidMove<T, P> extends false
+    ? {
+        board: NewBoardState<T, P>,
+        state: T['state'] extends TicTacToeChip
+          ? WhoWon<T['state'], NewBoardState<T, P>>
+          : never
+      }
+    : T;
+
+type Position = {
+  top: 0,
+  middle: 1,
+  bottom: 2,
+  left: 0,
+  center: 1,
+  right: 2,
+};
+
+type InvalidMove<T extends TicTacToeGame, P extends TicTacToePositions> =
+  P extends `${infer Y extends TicTacToeYPositions}-${infer X extends TicTacToeXPositions}`
+    ? T["board"][Position[Y]][Position[X]] extends TicTacToeEmptyCell
+      ? false
+      : true
+    : never;
 
 type NewBoardState<T extends TicTacToeGame, P extends TicTacToePositions> =
   T['state'] extends TicTacToeChip
@@ -60,8 +77,8 @@ type WhoWon<S extends TicTacToeChip, B extends TicTactToeBoard> =
     | [string, S, string][] | [S, string, string][] | [string, string, S][]
     | [S[], any[], any[]] | [any[], S[], any[]] | [any[], any[], S[]]
     ? `${S} Won`
-    : B extends (TicTacToeChip | TicTacToeEmptyCell)[][]
-      ? S extends '❌'
+    : B extends (TicTacToeChip)[][]
+      ? 'Draw'
+      : S extends '❌'
         ? '⭕'
-        : '❌'
-      : 'Draw';
+        : '❌';
