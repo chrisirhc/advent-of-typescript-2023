@@ -46,7 +46,7 @@ type NSC<B extends GameState, N extends Columns, R extends Rows, C extends Colum
     ? B['state'] extends infer S extends Connect4Chips
       ? B['board'][R][C] extends Connect4CellEmpty
         ? RowsP1Tuple[R] extends Rows
-          ? B['board'][RowsP1Tuple[R]] extends Connect4Chips 
+          ? B['board'][RowsP1Tuple[R]][C] extends Connect4Chips 
             ? S
             : B['board'][R][C]
           : S
@@ -69,13 +69,7 @@ type NextState<B extends GameState, N extends Columns> =
 
 type Connect4<B extends GameState, N extends Columns> = {
   board: NextBoard<B, N>,
-  state: B['state'] extends Connect4Chips
-    ? HasWon<NextBoard<B, N>, B['state']> extends false
-      ? B['state'] extends '🔴'
-        ? '🟡'
-        : '🔴'
-      : HasWon<NextBoard<B, N>, B['state']> // `${B['state']} Won`
-    : B['state'],
+  state: NextState<B, N>,
 };
 
 type x = [1,1,1,any] extends [1,1,1,2] ? true : false;
@@ -152,38 +146,3 @@ type HasWon<B extends Board, C extends Connect4Chips> = IsTuple<(
     | [B[0][3], B[1][2], B[2][1], B[3][0]]
 
   ) & Connected4Sets<C>)> extends true ? false : true;
-
-
-type t1 = HasWon<[
-      ['🟡', '🔴', '🔴', '🟡', '🟡', '🔴', '🟡'],
-      ['🔴', '🟡', '🟡', '🔴', '🔴', '🟡', '🔴'],
-      ['🟡', '🔴', '🔴', '🟡', '🟡', '🔴', '🟡'],
-      ['🔴', '🟡', '🟡', '🔴', '🔴', '🟡', '🔴'],
-      ['🟡', '🔴', '🔴', '🟡', '🟡', '🔴', '🟡'],
-      ['🔴', '🟡', '🟡', '🔴', '🔴', '🟡', '🔴']
-    ], '🟡'>;
-//   ^?
-
-type t2 = HasWon<NextBoard<NewGame, 0>, NewGame['state']>;
-
-type test_move1_actual = Connect4<NewGame, 0>;
-//   ^?
-type test_move1_expected = {
-  board: [
-    ["  ", "  ", "  ", "  ", "  ", "  ", "  "],
-    ["  ", "  ", "  ", "  ", "  ", "  ", "  "],
-    ["  ", "  ", "  ", "  ", "  ", "  ", "  "],
-    ["  ", "  ", "  ", "  ", "  ", "  ", "  "],
-    ["  ", "  ", "  ", "  ", "  ", "  ", "  "],
-    ["🟡", "  ", "  ", "  ", "  ", "  ", "  "],
-  ];
-  state: "🔴";
-};
-// import { Expect, Equal } from "type-testing";
-
-// type test_move123 = HasWon<NewGame['board'], NewGame['state']>;
-// type test_move1234 = NextState<NewGame, 0>;
-// type test_move123456 = Expect<Equal<NextBoard<NewGame, 0>, test_move1_expected['board']>>;
-// type test_move1234567 = HasWon<NextBoard<test_move1_expected, 0>, test_move1_expected['state']>;
-
-// type test_move1 = Expect<Equal<test_move1_actual, test_move1_expected>>;
