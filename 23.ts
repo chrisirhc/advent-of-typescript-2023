@@ -43,21 +43,21 @@ type NextBoard<B extends GameState, N extends Columns> =
 // NextStateCell
 type NSC<B extends GameState, N extends Columns, R extends Rows, C extends Columns> =
   N extends C
-    ? B['state'] extends infer S extends Connect4Chips
+    ? B['state'] extends Connect4Chips
       ? B['board'][R][C] extends Connect4CellEmpty
         ? RowsP1Tuple[R] extends Rows
           ? B['board'][RowsP1Tuple[R]][C] extends Connect4Chips 
-            ? S
-            : B['board'][R][C]
-          : S
+            ? B['state']
+            : B['board'][RowsP1Tuple[R]][C]
+          : B['state']
         : B['board'][R][C]
       : B['board'][R][C]
     : B['board'][R][C];
 
 type NextState<B extends GameState, N extends Columns> =
-  B['state'] extends Connect4Chips
-    ? NextBoard<B, N> extends infer NB extends Board
-      ? HasWon<NB, B['state']> extends false
+  [B['state']] extends [Connect4Chips]
+    ? [NextBoard<B, N>] extends [infer NB extends Board]
+      ? [HasWon<NB, B['state']>] extends [false]
         ? B['board'][number][number] extends Connect4Chips
           ? 'Draw'
           : B['state'] extends '🔴'
@@ -67,10 +67,58 @@ type NextState<B extends GameState, N extends Columns> =
       : B['state']
     : never;
 
-type Connect4<B extends GameState, N extends Columns> = {
-  board: NextBoard<B, N>,
-  state: NextState<B, N>,
-};
+type NextStateN<NB extends Board, C extends Connect4Chips> =
+  HasWon<NB, C> extends false
+    ? NB[number][number] extends Connect4Chips
+      ? 'Draw'
+      : C extends '🔴'
+        ? '🟡'
+        : '🔴'
+    : `${C} Won`
+
+
+type NextStateXX<B extends GameState, N extends Columns> =
+  // [B['state']] extends [Connect4Chips]
+    HasWon<NextBoard<B, N>, '🔴'>;
+      // : B['state']
+    // : never;
+
+type NextStateXXX<B extends Board> =
+  // [B['state']] extends [Connect4Chips]
+    HasWon<B, '🔴'>;
+
+
+type NextStateX<B extends GameState, N extends Columns> =
+  [B['state']] extends [Connect4Chips]
+    ? [NextBoard<B, N>] extends [infer NB extends Board]
+      ? HasWon<NB, B['state']>
+      : B['state']
+    : never;
+
+type NextStateXZ<B extends [GameState, Columns]> =
+  [B[0]['state']] extends [Connect4Chips]
+    ? [NextBoard<B[0], B[1]>] extends [infer NB extends Board]
+      ? HasWon<NB, B[0]['state']>
+      : B[0]['state']
+    : never;
+
+type NextStateY<B extends GameState, N extends Columns> =
+  [B['state']] extends [Connect4Chips]
+    ? [NextBoard<B, N>] extends [infer NB extends Board]
+      ? [NB, B['state']]
+      : B['state']
+    : never;
+
+
+type Connect4<B extends GameState, N extends Columns> =
+  NextBoard<B, N> extends infer NB extends Board
+    ? B['state'] extends Connect4Chips
+      ? {
+        board: NB,
+        state: NextStateN<NB, B['state']>,
+      }
+      : never
+    : never;
 
 type x = [1,1,1,any] extends [1,1,1,2] ? true : false;
 //   ^?
@@ -114,7 +162,7 @@ type IsNever<T> = [T] extends [never] ? true : false;
 type IsTuple<T> = IsNever<T> extends true ? false : T extends readonly unknown[] ? number extends T["length"] ? false : true : false;
 
 type HasWon<B extends Board, C extends Connect4Chips> = IsTuple<(
-  | (
+  (
     // Rows
     | B[number]
 
@@ -145,4 +193,39 @@ type HasWon<B extends Board, C extends Connect4Chips> = IsTuple<(
     | [B[0][4], B[1][3], B[2][2], B[3][1], B[4][0]]
     | [B[0][3], B[1][2], B[2][1], B[3][0]]
 
-  ) & Connected4Sets<C>)> extends true ? false : true;
+  ) & Connected4Sets<C>)>;
+
+
+  import { Expect, Equal } from "type-testing";
+
+  type test_move1_actual = Connect4<NewGame, 0>;
+  //   ^?
+  type test_move1_expected = {
+    board: [
+      ["  ", "  ", "  ", "  ", "  ", "  ", "  "],
+      ["  ", "  ", "  ", "  ", "  ", "  ", "  "],
+      ["  ", "  ", "  ", "  ", "  ", "  ", "  "],
+      ["  ", "  ", "  ", "  ", "  ", "  ", "  "],
+      ["  ", "  ", "  ", "  ", "  ", "  ", "  "],
+      ["🟡", "  ", "  ", "  ", "  ", "  ", "  "],
+    ];
+    state: "🔴";
+  };
+
+  type test_move1 = Expect<Equal<test_move1_actual, test_move1_expected>>;
+  type testmove1b = HasWon<test_move1_actual['board'], '🟡'>
+  type testmove1bc = IsTuple<HasWon<test_move1_actual['board'], '🟡'>>
+  type testmove1c = NextState<NewGame, 0>
+  type testmove1cx = NextStateX<NewGame, 0>
+  type testmove1cxx = NextStateXX<NewGame, 0>
+  type testmove1cxxx = NextStateXXX<NextBoard<NewGame, 0>>
+  type testmove1cxyzx = NextStateXZ<[NewGame, 0]>
+  type testmove1cxy = NextStateY<NewGame, 0>
+  type testmove1cxyz = HasWon<testmove1cxy[0], testmove1cxy[1]>
+  // type testmove1cxyzx = NextStateXZ<[testmove1cxy[0], 0]>
+  type testmove1cde = IsNever<NextState<NewGame, 0>>
+  type testmove1cdef = IsTuple<NextState<NewGame, 0>>
+  type testmove1cd = HasWon<NextBoard<NewGame, 0>, '🟡'>
+  type testmove1cdx = HasWon<NextBoard<NewGame, 0>, '🟡'> extends false ? 'yay' : 'nay'
+
+  type testmove11 = test_move1_actual['board'][3]
