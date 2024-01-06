@@ -30,8 +30,8 @@ type CoordMoveNextRow = {
 	right: NoMove,
 };
 type CoordMoveNextCol = {
-	left: MoveP1, // Next Column when moving left is Col-1
-	right: MoveM1, // Next Column when moving right is Col+1
+	left: MoveM1, // Next Column when moving left is Col-1
+	right: MoveP1, // Next Column when moving right is Col+1
 	up: NoMove,
 	down: NoMove,
 };
