@@ -1,11 +1,14 @@
-// WIP
 type Alley = "  ";
 type MazeItem = "🎄" | "🎅" | Alley;
 type DELICIOUS_COOKIES = "🍪";
 type MazeMatrix = MazeItem[][];
 type Directions = "up" | "down" | "left" | "right";
 type Move<M extends MazeMatrix, D extends Directions> =
-  NextMaze<M, D>;
+  NextMaze<M, D> extends infer NM extends MazeMatrix
+  ? NM[number][number] extends "🎄" | Alley
+    ? WonMaze
+    : NM
+  : never
 
 type Coord = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 type NoMove = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -44,7 +47,9 @@ type NM<M extends MazeMatrix, D extends Directions, R extends Coord, C extends C
       ? [M[R][C], M[NextRow][NextCol]] extends ["🎅", Alley]
         ? Alley
         : M[R][C]
-      : M[R][C]
+      : [undefined, M[R][C]] extends [(CoordMoveNextRow[D][R] | CoordMoveNextCol[D][C]), "🎅"]
+        ? Alley
+        : M[R][C]
 		: M[R][C];
 
 type NextMaze<M extends MazeMatrix, D extends Directions> = [
@@ -60,35 +65,12 @@ type NextMaze<M extends MazeMatrix, D extends Directions> = [
 	[NM<M, D, 9, 0>, NM<M, D, 9, 1>, NM<M, D, 9, 2>, NM<M, D, 9, 3>, NM<M, D, 9, 4>, NM<M, D, 9, 5>, NM<M, D, 9, 6>, NM<M, D, 9, 7>, NM<M, D, 9, 8>, NM<M, D, 9, 9>],
 ]
 
-import { Expect, Equal } from "type-testing";
+type NArray<T, N extends number, A extends T[] = []> =
+	A['length'] extends N
+		? A
+		: NArray<T, N, [...A, T]>;
 
-type Maze0 = [
-  ["🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄"],
-  ["🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎅", "🎄", "🎄", "🎄"],
-  ["🎄", "🎄", "🎄", "🎄", "  ", "🎄", "  ", "  ", "  ", "🎄"],
-  ["🎄", "🎄", "🎄", "🎄", "  ", "🎄", "  ", "🎄", "  ", "🎄"],
-  ["🎄", "  ", "  ", "  ", "  ", "🎄", "  ", "🎄", "  ", "🎄"],
-  ["  ", "  ", "🎄", "🎄", "  ", "  ", "  ", "🎄", "🎄", "🎄"],
-  ["🎄", "  ", "🎄", "🎄", "  ", "🎄", "  ", "🎄", "🎄", "🎄"],
-  ["🎄", "  ", "🎄", "🎄", "  ", "🎄", "  ", "🎄", "🎄", "🎄"],
-  ["🎄", "  ", "  ", "  ", "  ", "🎄", "  ", "🎄", "🎄", "🎄"],
-  ["🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄"],
-];
-type test_maze0_down_actual = Move<Maze0, 'down'>;
+type WonMaze = NArray<NArray<DELICIOUS_COOKIES, 10>, 10>
+
 // For each coord, calculate the next value. Move the Santa if the previous direction grid value contains the santa.
 // If Santa gets out, Santa is not an item in the final maze. Flip all blanks to DELICIOUS_COOKIEtype test_maze0_down_actual = Move<Maze0, 'down'>;
-//   ^?
-type Maze1 = [
-  ["🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄"],
-  ["🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "  ", "🎄", "🎄", "🎄"],
-  ["🎄", "🎄", "🎄", "🎄", "  ", "🎄", "🎅", "  ", "  ", "🎄"],
-  ["🎄", "🎄", "🎄", "🎄", "  ", "🎄", "  ", "🎄", "  ", "🎄"],
-  ["🎄", "  ", "  ", "  ", "  ", "🎄", "  ", "🎄", "  ", "🎄"],
-  ["  ", "  ", "🎄", "🎄", "  ", "  ", "  ", "🎄", "🎄", "🎄"],
-  ["🎄", "  ", "🎄", "🎄", "  ", "🎄", "  ", "🎄", "🎄", "🎄"],
-  ["🎄", "  ", "🎄", "🎄", "  ", "🎄", "  ", "🎄", "🎄", "🎄"],
-  ["🎄", "  ", "  ", "  ", "  ", "🎄", "  ", "🎄", "🎄", "🎄"],
-  ["🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄", "🎄"],
-];
-type test_maze0_down = Expect<Equal<test_maze0_down_actual, Maze1>>;
-type x = test_maze0_down_actual[1];
