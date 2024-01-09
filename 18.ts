@@ -1,8 +1,8 @@
-type Count<T extends any[], E, S extends E[] = []> = 
-T extends [...infer TF, Exclude<T[number],E>] 
-? Count<TF, E, S> 
-: T extends [...infer TF, E] 
-  ? Count<TF, E, [...S, E]>
-	: T extends []
-	  ? S['length']
-		: never;
+type Count<TElements extends any[], EToCount, TAcc extends EToCount[] = []> = 
+	TElements extends [...infer TFront, Exclude<TElements[number], EToCount>] 
+		? Count<TFront, EToCount, TAcc> 
+		: TElements extends [...infer TFront, EToCount] 
+			? Count<TFront, EToCount, [...TAcc, EToCount]>
+			: TElements extends []
+				? TAcc['length']
+				: never;
